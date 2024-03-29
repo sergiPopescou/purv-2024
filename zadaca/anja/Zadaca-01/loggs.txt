@@ -1,0 +1,195 @@
+----------------------  LOGGS FOR ZADACA_ANJA.C  --------------------------
+
+
+setting breakpoint on line 3 (main function)
+Breakpoint 1 at 0x117c: file zadaca_anja.c, line 4.
+
+
+running the program zadaca_anja.c
+Starting program: /home/anja/Desktop/PURV/purv-2024/zadaca/anja/zadaca_anja 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main (argc=1, argv=0x7fffffffdd78) at zadaca_anja.c:4
+warning: Source file is more recent than executable.
+4	{
+Dump of assembler code for function main:
+zadaca_anja.c:
+4	{
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x30,%rsp
+   0x0000555555555175 <+12>:	mov    %edi,-0x24(%rbp)
+   0x0000555555555178 <+15>:	mov    %rsi,-0x30(%rbp)
+=> 0x000055555555517c <+19>:	mov    %fs:0x28,%rax
+   0x0000555555555185 <+28>:	mov    %rax,-0x8(%rbp)
+   0x0000555555555189 <+32>:	xor    %eax,%eax
+
+5		int x = 10;    // STACK segment
+   0x000055555555518b <+34>:	movl   $0xa,-0x14(%rbp)
+
+6		int* ptr = &x; // STACK segment
+   0x0000555555555192 <+41>:	lea    -0x14(%rbp),%rax
+   0x0000555555555196 <+45>:	mov    %rax,-0x10(%rbp)
+
+7	
+8		ptr++;
+   0x000055555555519a <+49>:	addq   $0x4,-0x10(%rbp)
+
+9		printf("%x   %d \n",  ptr,  *ptr);  
+   0x000055555555519f <+54>:	mov    -0x10(%rbp),%rax
+   0x00005555555551a3 <+58>:	mov    (%rax),%edx
+   0x00005555555551a5 <+60>:	mov    -0x10(%rbp),%rax
+   0x00005555555551a9 <+64>:	mov    %rax,%rsi
+   0x00005555555551ac <+67>:	lea    0xe51(%rip),%rax        # 0x555555556004
+   0x00005555555551b3 <+74>:	mov    %rax,%rdi
+   0x00005555555551b6 <+77>:	mov    $0x0,%eax
+   0x00005555555551bb <+82>:	call   0x555555555070 <printf@plt>
+   0x00005555555551c0 <+87>:	mov    $0x0,%eax
+
+10	} 
+   0x00005555555551c5 <+92>:	mov    -0x8(%rbp),%rdx
+   0x00005555555551c9 <+96>:	sub    %fs:0x28,%rdx
+   0x00005555555551d2 <+105>:	je     0x5555555551d9 <main+112>
+   0x00005555555551d4 <+107>:	call   0x555555555060 <__stack_chk_fail@plt>
+   0x00005555555551d9 <+112>:	leave  
+   0x00005555555551da <+113>:	ret    
+End of assembler dump.
+0x0000555555555185	4	{
+0x0000555555555189	4	{
+5		int x = 10;    // STACK segment
+
+
+
+rsp, rbp = ? before first main source instruction
+rbp            0x7fffffffdc60      0x7fffffffdc60
+rsp            0x7fffffffdc30      0x7fffffffdc30
+There is 48 bytes of stack memory reserved for storing local variables.
+Content of stack memory between rbp and rsp :
+0x7fffffffdc30:	0x78	0xdd	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc38:	0xff	0xfb	0xeb	0xbf	0x01	0x00	0x00	0x00
+0x7fffffffdc40:	0x29	0xe1	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc48:	0x64	0x00	0x00	0x00	0x00	0x00	0x00	0x00
+0x7fffffffdc50:	0x00	0x10	0x00	0x00	0x00	0x00	0x00	0x00
+0x7fffffffdc58:	0x00	0xa7	0x24	0xb9	0x8e	0xd0	0xe8	0xbf
+0x7fffffffdc60:	0x01	0x00
+
+
+stepi for int x = 10; 
+6		int* ptr = &x; // STACK segment
+Value 10 should be stored somewhere in stack segment of main context
+0x7fffffffdc30:	0x78	0xdd	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc38:	0xff	0xfb	0xeb	0xbf	0x01	0x00	0x00	0x00
+0x7fffffffdc40:	0x29	0xe1	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc48:	0x64	0x00	0x00	0x00	0x0a	0x00	0x00	0x00
+0x7fffffffdc50:	0x00	0x10	0x00	0x00	0x00	0x00	0x00	0x00
+0x7fffffffdc58:	0x00	0xa7	0x24	0xb9	0x8e	0xd0	0xe8	0xbf
+0x7fffffffdc60:	0x01	0x00
+0x7fffffffdc4c is changed from 0x00 to 0x0a ( 0 to 10 )
+
+
+A syntax error in expression, near `ptr = &x; \n'.
+
+stepi for int* ptr = &x; 
+0x0000555555555196	6		int* ptr = &x; // STACK segment
+8		ptr++;
+0x7fffffffdc30:	0x78	0xdd	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc38:	0xff	0xfb	0xeb	0xbf	0x01	0x00	0x00	0x00
+0x7fffffffdc40:	0x29	0xe1	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc48:	0x64	0x00	0x00	0x00	0x0a	0x00	0x00	0x00
+0x7fffffffdc50:	0x4c	0xdc	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc58:	0x00	0xa7	0x24	0xb9	0x8e	0xd0	0xe8	0xbf
+0x7fffffffdc60:	0x01	0x00
+the address in which the value 10 is being stored is 7f ff ff ff dc 4c.
+so that address is gonna be sored into the stack block ..dc55 - ..dc50
+Those 6 bytes are the value stored into the pointer ptr.
+
+
+9		printf("%x   %d \n",  ptr,  *ptr);  
+0x7fffffffdc30:	0x78	0xdd	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc38:	0xff	0xfb	0xeb	0xbf	0x01	0x00	0x00	0x00
+0x7fffffffdc40:	0x29	0xe1	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc48:	0x64	0x00	0x00	0x00	0x0a	0x00	0x00	0x00
+0x7fffffffdc50:	0x50	0xdc	0xff	0xff	0xff	0x7f	0x00	0x00
+0x7fffffffdc58:	0x00	0xa7	0x24	0xb9	0x8e	0xd0	0xe8	0xbf
+0x7fffffffdc60:	0x01	0x00
+ptr = 0x7f ff ff ff dc 4c + 0x04 = 0x7f ff ff ff dc 50
+poniter was pointing to integer so the increment is 4.
+
+
+$1 = (int *) 0x7fffffffdc50
+0x7fffffffdc50:	0x50	0xdc	0xff	0xff
+0x00005555555551a3	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551a5	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551a9	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551ac	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551b3	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551b6	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x00005555555551bb	9		printf("%x   %d \n",  ptr,  *ptr);  
+0x0000555555555070 in printf@plt ()
+0x0000555555555074 in printf@plt ()
+__printf (format=0x555555556004 "%x   %d \n") at ./stdio-common/printf.c:28
+28	./stdio-common/printf.c: No such file or directory.
+0x00007ffff7c606f4	28	in ./stdio-common/printf.c
+0x00007ffff7c606fb	28	in ./stdio-common/printf.c
+0x00007ffff7c606fe	28	in ./stdio-common/printf.c
+0x00007ffff7c60703	28	in ./stdio-common/printf.c
+0x00007ffff7c60708	28	in ./stdio-common/printf.c
+0x00007ffff7c6070d	28	in ./stdio-common/printf.c
+0x00007ffff7c60712	28	in ./stdio-common/printf.c
+0x00007ffff7c60717	28	in ./stdio-common/printf.c
+0x00007ffff7c60719	28	in ./stdio-common/printf.c
+0x00007ffff7c60752	28	in ./stdio-common/printf.c
+0x00007ffff7c6075b	28	in ./stdio-common/printf.c
+0x00007ffff7c60760	28	in ./stdio-common/printf.c
+32	in ./stdio-common/printf.c
+0x00007ffff7c6076a	33	in ./stdio-common/printf.c
+0x00007ffff7c6076d	33	in ./stdio-common/printf.c
+0x00007ffff7c6076f	32	in ./stdio-common/printf.c
+0x00007ffff7c60774	32	in ./stdio-common/printf.c
+0x00007ffff7c60779	33	in ./stdio-common/printf.c
+0x00007ffff7c6077c	32	in ./stdio-common/printf.c
+33	in ./stdio-common/printf.c
+0x00007ffff7c60788	32	in ./stdio-common/printf.c
+0x00007ffff7c6078f	33	in ./stdio-common/printf.c
+0x00007ffff7c60792	32	in ./stdio-common/printf.c
+0x00007ffff7c6079a	33	in ./stdio-common/printf.c
+__vfprintf_internal (s=0x7ffff7e1b780 <_IO_2_1_stdout_>, format=0x555555556004 "%x   %d \n", ap=ap@entry=0x7fffffffdb50, mode_flags=mode_flags@entry=0) at ./stdio-common/vfprintf-internal.c:1180
+1180	./stdio-common/vfprintf-internal.c: No such file or directory.
+0x00007ffff7c75034	1180	in ./stdio-common/vfprintf-internal.c
+0x00007ffff7c75036	1180	in ./stdio-common/vfprintf-internal.c
+1218	in ./stdio-common/vfprintf-internal.c
+1222	in ./stdio-common/vfprintf-internal.c
+1233	in ./stdio-common/vfprintf-internal.c
+1244	in ./stdio-common/vfprintf-internal.c
+Continuing.
+[Inferior 1 (process 13018) exited normally]
+
+
+No symbol "ptr" in current context.
+Starting program: /home/anja/Desktop/PURV/purv-2024/zadaca/anja/zadaca_anja 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main (argc=1, argv=0x7fffffffdd78) at zadaca_anja.c:4
+4	{
+Breakpoint 2 at 0x5555555551c5: file zadaca_anja.c, line 10.
+5		int x = 10;    // STACK segment
+6		int* ptr = &x; // STACK segment
+8		ptr++;
+9		printf("%x   %d \n",  ptr,  *ptr);
+  
+Printing value stored into pointer ptr = 
+$3 = (int *) 0x7fffffffdc50
+
+We can see that ptr no longer points to 
+  0x7f ff ff ff dc 4c ( *(0x7f ff ff ff dc 4c) = 0x00 0x00 0x00	0x0a )
+but to
+  0x7f ff ff ff dc 50 ( *(0x7f ff ff ff dc 4c) = 0xff 0xff 0xdc 0x50 )
+  
+0x7fffffffdc50:	-9136	32767	266366976	-1046024011
+Continuing.
+
+Breakpoint 2, main (argc=1, argv=0x7fffffffdd78) at zadaca_anja.c:10
+10	} 
