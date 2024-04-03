@@ -1,0 +1,56 @@
+# breakpoint before function main
+Breakpoint 1 at 0x113d: file zadaca_luka.c, line 9.
+
+
+# printing esp and ebp every time we run
+1: /a $sp = <error: No registers.>
+2: /a $bp = <error: No registers.>
+
+
+# go
+Starting program: /home/kenobi/Fakultet/Programiranje-u-realnom-vremenu/Laboratorije/purv-2024/zadaca/luka/zadaca_luka.o 
+
+This GDB supports auto-downloading debuginfo from the following URLs:
+  <https://debuginfod.archlinux.org>
+Debuginfod has been disabled.
+To make this setting permanent, add 'set debuginfod enabled off' to .gdbinit.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_luka.c:9
+9	    printf("%s\n", array[0]);
+1: /a $sp = 0x7fffffffe110
+2: /a $bp = 0xffffffffffffe110
+
+
+# where we actually land
+Dump of assembler code for function main:
+   0x0000555555555139 <+0>:	push   %rbp
+   0x000055555555513a <+1>:	mov    %rsp,%rbp
+=> 0x000055555555513d <+4>:	movzbl 0x2ed4(%rip),%eax        # 0x555555558018 <array>
+   0x0000555555555144 <+11>:	movsbl %al,%eax
+   0x0000555555555147 <+14>:	mov    %eax,%esi
+   0x0000555555555149 <+16>:	lea    0xeb4(%rip),%rax        # 0x555555556004
+   0x0000555555555150 <+23>:	mov    %rax,%rdi
+   0x0000555555555153 <+26>:	mov    $0x0,%eax
+   0x0000555555555158 <+31>:	call   0x555555555030 <printf@plt>
+   0x000055555555515d <+36>:	mov    $0x0,%eax
+   0x0000555555555162 <+41>:	pop    %rbp
+   0x0000555555555163 <+42>:	ret
+End of assembler dump.
+# stack
+0x7fffffffe110:	0x00000001	0x00000000	0xf7dcccd0	0x00007fff
+0x7fffffffe120:	0xffffe210	0x00007fff	0x55555139	0x00005555
+0x7fffffffe130:	0x55554040	0x00000001	0xffffe228	0x00007fff
+0x7fffffffe140:	0xffffe228	0x00007fff	0xd7c34fe9	0xb45b8735
+
+
+# address of array
+Symbol "array" is static storage at address 0x555555558018.
+# Continuing
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7e544ba in ?? () from /usr/lib/libc.so.6
+1: /a $sp = 0x7fffffffd9d8
+2: /a $bp = 0x68
