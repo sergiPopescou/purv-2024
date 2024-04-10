@@ -1,0 +1,152 @@
+#go
+Starting program: /home/ana/Documents/PURV/Zadaca1/zadaca_ana 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000555555555195 in main () at zadaca_ana.c:8
+8	     strcat(strng, " dodatni strng"); 
+
+#setting breakpoint at line:8
+Breakpoint 1 at 0x555555555175: file zadaca_ana.c, line 8.
+
+
+#where we actually land
+Dump of assembler code for function main:
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x10,%rsp
+   0x0000555555555175 <+12>:	mov    -0x8(%rbp),%rax
+   0x0000555555555179 <+16>:	mov    %rax,%rdi
+   0x000055555555517c <+19>:	call   0x555555555060 <strlen@plt>
+   0x0000555555555181 <+24>:	mov    %rax,%rdx
+   0x0000555555555184 <+27>:	mov    -0x8(%rbp),%rax
+   0x0000555555555188 <+31>:	add    %rdx,%rax
+   0x000055555555518b <+34>:	movabs $0x696e7461646f6420,%rcx
+=> 0x0000555555555195 <+44>:	mov    %rcx,(%rax)
+   0x0000555555555198 <+47>:	movl   $0x72747320,0x8(%rax)
+   0x000055555555519f <+54>:	movw   $0x676e,0xc(%rax)
+   0x00005555555551a5 <+60>:	movb   $0x0,0xe(%rax)
+   0x00005555555551a9 <+64>:	mov    -0x8(%rbp),%rax
+   0x00005555555551ad <+68>:	mov    %rax,%rsi
+   0x00005555555551b0 <+71>:	lea    0xe4d(%rip),%rax        # 0x555555556004
+   0x00005555555551b7 <+78>:	mov    %rax,%rdi
+   0x00005555555551ba <+81>:	mov    $0x0,%eax
+   0x00005555555551bf <+86>:	call   0x555555555070 <printf@plt>
+   0x00005555555551c4 <+91>:	mov    $0x0,%eax
+   0x00005555555551c9 <+96>:	leave  
+   0x00005555555551ca <+97>:	ret    
+End of assembler dump.
+
+#setting another breakpoint
+Breakpoint 2 at 0x555555555195: file zadaca_ana.c, line 8.
+Starting program: /home/ana/Documents/PURV/Zadaca1/zadaca_ana 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+#info registers
+Breakpoint 1, main () at zadaca_ana.c:8
+8	     strcat(strng, " dodatni strng"); 
+rax            0x555555555169      93824992235881
+rbx            0x0                 0
+rcx            0x555555557db8      93824992247224
+rdx            0x7fffffffdf88      140737488347016
+rsi            0x7fffffffdf78      140737488347000
+rdi            0x1                 1
+rbp            0x7fffffffde60      0x7fffffffde60
+rsp            0x7fffffffde50      0x7fffffffde50
+r8             0x7ffff7f99f10      140737353719568
+r9             0x7ffff7fc9040      140737353912384
+r10            0x7ffff7fc3908      140737353890056
+r11            0x7ffff7fde660      140737353999968
+r12            0x7fffffffdf78      140737488347000
+r13            0x555555555169      93824992235881
+r14            0x555555557db8      93824992247224
+r15            0x7ffff7ffd040      140737354125376
+rip            0x555555555175      0x555555555175 <main+12>
+eflags         0x206               [ PF IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x0                 0
+es             0x0                 0
+fs             0x0                 0
+gs             0x0                 0
+
+#displaying memory content of rax
+0x555555555169 <main>:	"\363\017\036\372UH\211\345H\203\354\020H\213E\370H\211\307\350\337\376\377\377H\211\302H\213E\370H\001\320H\271 dodatniH\211\b\307@\b strf\307@\fng\306@\016"
+
+#displaying info files
+Symbols from "/home/ana/Documents/PURV/Zadaca1/zadaca_ana".
+Native process:
+	Using the running image of child Thread 0x7ffff7d7b740 (LWP 9437).
+	While running this, GDB does not access memory from...
+Local exec file:
+	`/home/ana/Documents/PURV/Zadaca1/zadaca_ana', file type elf64-x86-64.
+	Entry point: 0x555555555080
+	0x0000555555554318 - 0x0000555555554334 is .interp
+	0x0000555555554338 - 0x0000555555554368 is .note.gnu.property
+	0x0000555555554368 - 0x000055555555438c is .note.gnu.build-id
+	0x000055555555438c - 0x00005555555543ac is .note.ABI-tag
+	0x00005555555543b0 - 0x00005555555543d4 is .gnu.hash
+	0x00005555555543d8 - 0x0000555555554498 is .dynsym
+	0x0000555555554498 - 0x000055555555452e is .dynstr
+	0x000055555555452e - 0x000055555555453e is .gnu.version
+	0x0000555555554540 - 0x0000555555554570 is .gnu.version_r
+	0x0000555555554570 - 0x0000555555554630 is .rela.dyn
+	0x0000555555554630 - 0x0000555555554660 is .rela.plt
+	0x0000555555555000 - 0x000055555555501b is .init
+	0x0000555555555020 - 0x0000555555555050 is .plt
+	0x0000555555555050 - 0x0000555555555060 is .plt.got
+	0x0000555555555060 - 0x0000555555555080 is .plt.sec
+	0x0000555555555080 - 0x00005555555551cb is .text
+	0x00005555555551cc - 0x00005555555551d9 is .fini
+	0x0000555555556000 - 0x000055555555600b is .rodata
+	0x000055555555600c - 0x0000555555556040 is .eh_frame_hdr
+	0x0000555555556040 - 0x00005555555560ec is .eh_frame
+	0x0000555555557db0 - 0x0000555555557db8 is .init_array
+	0x0000555555557db8 - 0x0000555555557dc0 is .fini_array
+	0x0000555555557dc0 - 0x0000555555557fb0 is .dynamic
+	0x0000555555557fb0 - 0x0000555555558000 is .got
+	0x0000555555558000 - 0x0000555555558010 is .data
+	0x0000555555558010 - 0x0000555555558018 is .bss
+
+#trying to display the assembly instructions of .text segment
+   0x1080:	Cannot access memory at address 0x1080
+#trying to display the assembly instructions of .dynamic segment
+   0x3dc0:	Cannot access memory at address 0x3dc0
+
+#info proc mappings
+process 9582
+Mapped address spaces:
+
+          Start Addr           End Addr       Size     Offset  Perms  objfile
+      0x555555554000     0x555555555000     0x1000        0x0  r--p   /home/ana/Documents/PURV/Zadaca1/zadaca_ana
+      0x555555555000     0x555555556000     0x1000     0x1000  r-xp   /home/ana/Documents/PURV/Zadaca1/zadaca_ana
+      0x555555556000     0x555555557000     0x1000     0x2000  r--p   /home/ana/Documents/PURV/Zadaca1/zadaca_ana
+      0x555555557000     0x555555558000     0x1000     0x2000  r--p   /home/ana/Documents/PURV/Zadaca1/zadaca_ana
+      0x555555558000     0x555555559000     0x1000     0x3000  rw-p   /home/ana/Documents/PURV/Zadaca1/zadaca_ana
+      0x7ffff7d7b000     0x7ffff7d7e000     0x3000        0x0  rw-p   
+      0x7ffff7d7e000     0x7ffff7da6000    0x28000        0x0  r--p   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7da6000     0x7ffff7f3b000   0x195000    0x28000  r-xp   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7f3b000     0x7ffff7f93000    0x58000   0x1bd000  r--p   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7f93000     0x7ffff7f94000     0x1000   0x215000  ---p   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7f94000     0x7ffff7f98000     0x4000   0x215000  r--p   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7f98000     0x7ffff7f9a000     0x2000   0x219000  rw-p   /usr/lib/x86_64-linux-gnu/libc.so.6
+      0x7ffff7f9a000     0x7ffff7fa7000     0xd000        0x0  rw-p   
+      0x7ffff7fbb000     0x7ffff7fbd000     0x2000        0x0  rw-p   
+      0x7ffff7fbd000     0x7ffff7fc1000     0x4000        0x0  r--p   [vvar]
+      0x7ffff7fc1000     0x7ffff7fc3000     0x2000        0x0  r-xp   [vdso]
+      0x7ffff7fc3000     0x7ffff7fc5000     0x2000        0x0  r--p   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+      0x7ffff7fc5000     0x7ffff7fef000    0x2a000     0x2000  r-xp   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+      0x7ffff7fef000     0x7ffff7ffa000     0xb000    0x2c000  r--p   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+      0x7ffff7ffb000     0x7ffff7ffd000     0x2000    0x37000  r--p   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+      0x7ffff7ffd000     0x7ffff7fff000     0x2000    0x39000  rw-p   /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+      0x7ffffffde000     0x7ffffffff000    0x21000        0x0  rw-p   [stack]
+  0xffffffffff600000 0xffffffffff601000     0x1000        0x0  --xp   [vsyscall]
+
+#info locals
+strng = 0x555555555080 <_start> "\363\017\036\372\061\355I\211\321^H\211\342H\203\344\360PTE1\300\061\311H\215", <incomplete sequence \312>
+$1 = 0x555555555080 <_start> "\363\017\036\372\061\355I\211\321^H\211\342H\203\344\360PTE1\300\061\311H\215", <incomplete sequence \312>
+$2 = -13 '\363'
+
