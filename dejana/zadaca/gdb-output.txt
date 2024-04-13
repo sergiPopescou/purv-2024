@@ -1,0 +1,164 @@
+Undefined command: "ecgo".  Try "help".
+#breakpoint before free(p).Breakpoint 1 at 0x1183: file zadaca_dejana.c, line 6.
+#breakpoint at free(p).Breakpoint 2 at 0x118b: file zadaca_dejana.c, line 7.
+#breakpoint at *p = 110.Breakpoint 3 at 0x1197: file zadaca_dejana.c, line 8.
+
+
+# also, let's print esp and ebp every time we run
+
+display/a $sp
+display/a $bp
+echo 
+
+1: /a $sp = <error: No registers.>
+2: /a $bp = <error: No registers.>
+# go
+
+run
+echo 
+
+Starting program: /home/dejana/2020.lab01/zadaca_dejana 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_dejana.c:6
+6	    p = 100; 
+1: /a $sp = 0x7fffffffddf0
+2: /a $bp = 0xffffffffffffde00
+# where we actually land
+
+disasDump of assembler code for function main:
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x10,%rsp
+   0x0000555555555175 <+12>:	mov    $0x8,%edi
+   0x000055555555517a <+17>:	call   0x555555555070 <malloc@plt>
+   0x000055555555517f <+22>:	mov    %rax,-0x8(%rbp)
+=> 0x0000555555555183 <+26>:	movq   $0x64,-0x8(%rbp)
+   0x000055555555518b <+34>:	mov    -0x8(%rbp),%rax
+   0x000055555555518f <+38>:	mov    %rax,%rdi
+   0x0000555555555192 <+41>:	call   0x555555555060 <free@plt>
+   0x0000555555555197 <+46>:	mov    -0x8(%rbp),%rax
+   0x000055555555519b <+50>:	movl   $0x6e,(%rax)
+   0x00005555555551a1 <+56>:	mov    $0x0,%eax
+   0x00005555555551a6 <+61>:	leave  
+   0x00005555555551a7 <+62>:	ret    
+End of assembler dump.
+Dump of assembler code for function main:
+zadaca_dejana.c:
+4	{ 
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x10,%rsp
+
+5	    int* p = malloc(8); 
+   0x0000555555555175 <+12>:	mov    $0x8,%edi
+   0x000055555555517a <+17>:	call   0x555555555070 <malloc@plt>
+   0x000055555555517f <+22>:	mov    %rax,-0x8(%rbp)
+
+6	    p = 100; 
+=> 0x0000555555555183 <+26>:	movq   $0x64,-0x8(%rbp)
+
+7	    free(p); 
+   0x000055555555518b <+34>:	mov    -0x8(%rbp),%rax
+   0x000055555555518f <+38>:	mov    %rax,%rdi
+   0x0000555555555192 <+41>:	call   0x555555555060 <free@plt>
+
+8	    *p = 110; 
+   0x0000555555555197 <+46>:	mov    -0x8(%rbp),%rax
+   0x000055555555519b <+50>:	movl   $0x6e,(%rax)
+
+9	    return 0; 
+   0x00005555555551a1 <+56>:	mov    $0x0,%eax
+
+10	} 
+   0x00005555555551a6 <+61>:	leave  
+   0x00005555555551a7 <+62>:	ret    
+End of assembler dump.
+# stack
+0x7fffffffddf0:	0x00001000	0x00000000	0x555592a0	0x00005555
+0x7fffffffde00:	0x00000001	0x00000000	0xf7db4d90	0x00007fff
+0x7fffffffde10:	0x00000000	0x00000000	0x55555169	0x00005555
+0x7fffffffde20:	0xffffdf00	0x00000001	0xffffdf18	0x00007fff
+0x7fffffffddf0:	0x00001000	0x00000000	0x555592a0	0x00005555
+0x7fffffffde00:	0x00000001	0x00000000	0xf7db4d90	0x00007fff
+0x7fffffffde10:	0x00000000	0x00000000	0x55555169	0x00005555
+0x7fffffffde20:	0xffffdf00	0x00000001	0xffffdf18	0x00007fff
+0x7fffffffde30:	0x00000000	0x00000000	0xc8194327	0x504f9ce6
+
+
+# address of the variable
+Symbol "p" is a complex DWARF expression:
+     0: DW_OP_fbreg -24
+.
+Undefined command: "readelf".  Try "help".
+Undefined command: "readelf".  Try "help".
+Continuing.
+
+Breakpoint 2, main () at zadaca_dejana.c:7
+7	    free(p); 
+1: /a $sp = 0x7fffffffddf0
+2: /a $bp = 0xffffffffffffde00
+Dump of assembler code for function main:
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x10,%rsp
+   0x0000555555555175 <+12>:	mov    $0x8,%edi
+   0x000055555555517a <+17>:	call   0x555555555070 <malloc@plt>
+   0x000055555555517f <+22>:	mov    %rax,-0x8(%rbp)
+   0x0000555555555183 <+26>:	movq   $0x64,-0x8(%rbp)
+=> 0x000055555555518b <+34>:	mov    -0x8(%rbp),%rax
+   0x000055555555518f <+38>:	mov    %rax,%rdi
+   0x0000555555555192 <+41>:	call   0x555555555060 <free@plt>
+   0x0000555555555197 <+46>:	mov    -0x8(%rbp),%rax
+   0x000055555555519b <+50>:	movl   $0x6e,(%rax)
+   0x00005555555551a1 <+56>:	mov    $0x0,%eax
+   0x00005555555551a6 <+61>:	leave  
+   0x00005555555551a7 <+62>:	ret    
+End of assembler dump.
+Dump of assembler code for function main:
+zadaca_dejana.c:
+4	{ 
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x10,%rsp
+
+5	    int* p = malloc(8); 
+   0x0000555555555175 <+12>:	mov    $0x8,%edi
+   0x000055555555517a <+17>:	call   0x555555555070 <malloc@plt>
+   0x000055555555517f <+22>:	mov    %rax,-0x8(%rbp)
+
+6	    p = 100; 
+   0x0000555555555183 <+26>:	movq   $0x64,-0x8(%rbp)
+
+7	    free(p); 
+=> 0x000055555555518b <+34>:	mov    -0x8(%rbp),%rax
+   0x000055555555518f <+38>:	mov    %rax,%rdi
+   0x0000555555555192 <+41>:	call   0x555555555060 <free@plt>
+
+8	    *p = 110; 
+   0x0000555555555197 <+46>:	mov    -0x8(%rbp),%rax
+   0x000055555555519b <+50>:	movl   $0x6e,(%rax)
+
+9	    return 0; 
+   0x00005555555551a1 <+56>:	mov    $0x0,%eax
+
+10	} 
+   0x00005555555551a6 <+61>:	leave  
+   0x00005555555551a7 <+62>:	ret    
+End of assembler dump.
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7e303fe in __GI___libc_free (mem=0x64) at ./malloc/malloc.c:3368
+3368	./malloc/malloc.c: No such file or directory.
+1: /a $sp = 0x7fffffffddc0
+2: /a $bp = 0xffffffffffffde00
+# Segemntation fault (pokusava da se pristupa oslobodjenom dijelu memorije)Continuing.
+
+Program terminated with signal SIGSEGV, Segmentation fault.
+The program no longer exists.
