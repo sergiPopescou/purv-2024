@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
+#include <string.h>
 
 #define CLEAN_SCREEN printf("\e[1;1H\e[2J"); 
 char matrix[10][10] = {
@@ -30,6 +31,7 @@ void print_all_new_states();
 void* cell_func(void *pParam);
 void* sig_thread_func(void* pParam);
 int thread_arg[100];
+int num_of_evolutions = 0;
 
 // priority of cells that are being calculated.
 int next_priority = 1;
@@ -41,7 +43,7 @@ pthread_mutex_t mutex;
 
 int main(int argc, char* args[]) {
 	if(argc > 1)
-		delay_us = atoi(args[1]);
+		delay_us = atoi(args[1])*1000;
 
 	sem_init(&semaphore, 0, 0);
 	CLEAN_SCREEN
@@ -85,6 +87,7 @@ void* cell_func(void *pParam) {
 			CLEAN_SCREEN
 			pom_matrix[i][j] = find_next_state(i, j) ? '#' : ' ';
 			if(priority == 28) {
+				num_of_evolutions++;
 				num_of_todo = 1;
 				for(int l=0;l<10;l++) {
 					for(int k=0;k<10;k++) {
@@ -92,6 +95,7 @@ void* cell_func(void *pParam) {
 					}
 				}
 				print_matrix();
+				printf("age: %d\n", num_of_evolutions);
 				usleep(delay_us);
 				fflush(stdout);
 				for(int i=0;i<99;i++)
@@ -121,7 +125,7 @@ void* cell_func(void *pParam) {
 			sem_wait(&semaphore);
 		}
 		else
-			usleep(15000);
+			usleep(1300);
 	}
 	return 0;
 }
