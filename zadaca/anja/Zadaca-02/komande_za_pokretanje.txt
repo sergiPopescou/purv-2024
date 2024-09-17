@@ -1,0 +1,23 @@
+Komande za pokretanje:
+gcc readelf--file-header.c -o readelf--file-header
+gcc random_code.c -o random_code
+./readelf--file-header random_code
+
+Izlaz:
+Magic number: 1 :7f-45-4c-46-
+Class: 64bit objects 
+Data: Little Endian 
+Version: Current version 
+OSABI: No extensions or unspecified 
+ABI Version: 0 
+E_MACHINE: Infineon Technologies 32-bit processor 
+E_TYPE: Shared object file 
+E_ENTRY: 0x1060 
+Flags: 0x0
+ELF header's size in bytes: 64 
+Size in bytes of one entry in the file's program header table: 56 
+number of entries in the program header table: 13
+section header's size in bytes: 64 
+number of entries in the section header table.: 31
+section header table index of the entry associated with the section name string table: 30
+
