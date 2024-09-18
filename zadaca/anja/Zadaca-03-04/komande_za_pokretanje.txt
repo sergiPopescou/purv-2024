@@ -1,0 +1,3 @@
+Komande za pokretanje:
+gcc conway.c -o conway
+./conway
