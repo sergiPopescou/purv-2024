@@ -1,176 +1,143 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <pthread.h>
+#include <unistd.h>
 #include <semaphore.h>
-#include <signal.h>
-#include <string.h>
 
-#define CLEAN_SCREEN printf("\e[1;1H\e[2J"); 
-char matrix[10][10] = {
-	{' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
-	{'#', '#', ' ', ' ', '#', ' ', '#', ' ', ' '},
-	{'#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#'},
-	{' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' '},
-	{'#', '#', ' ', '#', ' ', '#', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-	{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-};
+int matrix[10][10] = {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+				  	  {1, 1, 0, 0, 1, 0, 1, 0, 0, 0},
+				      {1, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+				      {0, 0, 0, 0, 0, 0, 0, 1, 1, 0},
+				      {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+				      {1, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+				      {1, 1, 0, 1, 0, 1, 0, 0, 0, 0},
+				      {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+				      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+				      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
-char pom_matrix[10][10];
-void INThandler(int);
-
-// default delay between matrix printouts in microseconds.
-int delay_us = 200000;
-void print_matrix();
-int find_next_state(int i, int j);
-void print_all_new_states();
-void* cell_func(void *pParam);
-void* sig_thread_func(void* pParam);
-int thread_arg[100];
-int num_of_evolutions = 0;
-
-// priority of cells that are being calculated.
-int next_priority = 1;
-
-// number of cells with same priority, that are being calculated.
-int num_of_todo = 1;
-static sem_t semaphore;
+int pom_matrix[10][10];
+sem_t semaphores[100];
 pthread_mutex_t mutex;
+int sleep_usec = 300000;
+int done_cells[28] ={0};
 
-int main(int argc, char* args[]) {
-	if(argc > 1)
-		delay_us = atoi(args[1])*1000;
+int find_new_state(int i, int j);
+void* cell_func(void* arg);
+void print_matrix(int matrix[10][10]);
+int find_number_of_posts(int priority);
 
-	sem_init(&semaphore, 0, 0);
-	CLEAN_SCREEN
-	print_matrix();
-	usleep(delay_us);
-	CLEAN_SCREEN
-
-	pthread_t threads[100];
-	pthread_t sig_thread;
+int main(int argc, char *argv[]) {
+	if(argc>1)
+		sleep_usec = atoi(argv[1]);
+	for(int i=0;i<100;i++) {
+		sem_init(&semaphores[i], 0, 0);
+	}
+	sem_post(&semaphores[0]);
+	pthread_t cells[100];
 	pthread_mutex_init(&mutex, NULL);
-	pthread_create(&sig_thread, NULL, sig_thread_func, NULL);
+	int args[100];
 
-	for(int i=0;i<100;i++) {
-		thread_arg[i] = i;
-		pthread_create(&threads[i], NULL, cell_func, (void*)&thread_arg[i]);
+	for(int i=0;i<10;i++) {
+		for(int j=0;j<10;j++) {
+			int priority = (i*2+j+1);
+			args[i*10+j] = (priority*100)+(i*10)+j; // priority + row + col, e.g priority 10, row 3, col 2 => arg = 1032
+			pthread_create(&cells[i*10+j],NULL, &cell_func, (void*)(&args[i*10+j]));
+		}
 	}
-	for(int i=0;i<100;i++) {
-		pthread_join(threads[i], NULL);
-	}
-	sem_destroy(&semaphore);
+
+	for(int i=0;i<10;i++)
+		for(int j=0;j<10;j++)
+			pthread_join(cells[i*10+j], NULL);
+
+	for(int i=0;i<100;i++)
+		sem_destroy(&semaphores[i]);
 	pthread_mutex_destroy(&mutex);
+
+	return 0;
 }
 
-/* cell trhread body
- * after next state of current cell is calcluated
- * it waits for semaphore and is blocked.
- * After next state of cell with priority 28(last cell) is calculated,
- * matrix is printed, and
- * that thread posts semaphore 100 times(number of threads/cells),
- * and the cycle of calculating continues from priority 1
-*/
-
-void* cell_func(void *pParam) {
-	int index = *(int*)pParam;
-	int i = index/10;
-	int j = index%10;
-	int priority = i*2+j+1;
+void* cell_func(void* arg) {
+	int priority = (*(int*)arg)/100;
+	int i = ((*(int*)arg)/10)%10; // row
+	int j = (*(int*)arg)%10; // col
+	
+	int number_of_posts_this = find_number_of_posts(priority);
+	int number_of_posts_next = find_number_of_posts(priority+1);
 
 	while(1) {
-		if(priority == next_priority && num_of_todo>0) {
-			CLEAN_SCREEN
-			pom_matrix[i][j] = find_next_state(i, j) ? '#' : ' ';
-			if(priority == 28) {
-				num_of_evolutions++;
-				num_of_todo = 1;
-				for(int l=0;l<10;l++) {
-					for(int k=0;k<10;k++) {
-						matrix[l][k] = pom_matrix[l][k];
-					}
-				}
-				print_matrix();
-				printf("age: %d\n", num_of_evolutions);
-				usleep(delay_us);
-				fflush(stdout);
-				for(int i=0;i<99;i++)
-					sem_post(&semaphore);
-				next_priority = 1;
-				continue;
-			}
-			num_of_todo--;
-			if(num_of_todo == 0) {
-				int pom;
-				pom = (priority+1)/2 + (priority+1)%2;
-				if((priority+1) > 10)
-					pom = 5;
-				if((priority+1) > 20) {
-					pom = (priority+1)/5;
-				}
-				if((priority+1) > 22) {
-					pom = (priority+1)/7;
-				}
-				if((priority+1) == 25 || (priority+1) == 26)
-					pom = 2;
-				if(priority+1 == 27 || priority+1 == 28)
-					pom = 1;
-				next_priority++;
-				num_of_todo=pom;
-			}
-			sem_wait(&semaphore);
+		sem_wait(&semaphores[priority-1]); // TODO [promijeni]
+		/* printf("USAO JE %d %d %d\n", priority, i, j); */
+		/* fflush(stdout); */
+		int new_state = find_new_state(i, j);
+		pom_matrix[i][j] = new_state;
+		if(priority == 28) {
+			for(int k=0;k<10;k++)
+				for(int l=0;l<10;l++)
+					matrix[k][l] = pom_matrix[k][l];
+			for(int k=0;k<28;k++)
+				done_cells[k] = 0;
+			printf("\e[1;1H\e[2J");
+			print_matrix(matrix);
+			fflush(stdout);
+			usleep(sleep_usec-200000);
+			sem_post(&semaphores[0]);
+			continue;
 		}
-		else
-			usleep(1300);
+		pthread_mutex_lock(&mutex);
+			if(++done_cells[priority-1] == number_of_posts_this) {
+				for(int k=0;k<number_of_posts_next;k++) {
+					sem_post(&semaphores[priority]);
+				}
+			}
+		pthread_mutex_unlock(&mutex);
+		/* printf("ZAVRSIO JE %d %d %d\n", priority, i, j); */
+		/* while(done_cells[priority-1] != number_of_posts_this) */
+		/* 	usleep(100); */
+		usleep(500); 
 	}
 	return 0;
 }
 
-void print_matrix() {
+void print_matrix(int matrix[10][10]) {
 	for(int i=0;i<10;i++) {
-		for(int j=0;j<10;j++) {
-			printf("%c", matrix[i][j]);
-		}
+		for(int j=0;j<10;j++)
+			matrix[i][j] == 0 ? printf(" ") : printf("#");
 		printf("\n");
-		fflush(stdout);
 	}
 }
 
-/* returns 1 if (i, j) cell will be alive in next cycle, otherwise 0. */
-int find_next_state(int i, int j) {
-	int number_of_live_neighbours = 0;
-	for(int k = i-1; k<=i+1;k++) {
-		for(int l = j-1; l<=j+1;l++) {
-			if(k>=0 && k<10 && l>=0 && l<10 && !(k==i && l==j) && matrix[k][l] == '#')
-				number_of_live_neighbours++;
+int find_number_of_posts(int priority) {
+	if(priority == 1 || priority == 2 || priority == 27 || priority == 28)
+		return 1;
+	else if(priority == 3 || priority == 4 || priority == 26 || priority == 25)
+		return 2;
+	else if(priority == 5 || priority == 6 || priority == 23 || priority == 24)
+		return 3;
+	else if(priority == 7 || priority == 8 || priority == 22 || priority == 21)
+		return 4;
+	else return 5;
+}
+
+int find_new_state(int i, int j) {
+	int num_of_live_neighbours = 0;
+	for(int ii=i-1;ii<i+2;ii++) {
+		for(int jj=j-1;jj<j+2;jj++) {
+			if(ii<0 || ii>9 || jj<0 || jj>9 || (ii==i && jj==j))
+				continue;
+			if(matrix[ii][jj] == 1)
+				num_of_live_neighbours++;
 		}
 	}
-	if(number_of_live_neighbours < 2)
+
+	if(num_of_live_neighbours > 3 || num_of_live_neighbours < 2) {
 		return 0;
-	if(number_of_live_neighbours == 2 && matrix[i][j] == '#')
+	}
+	else if(num_of_live_neighbours == 2 && matrix[i][j] == 1) {
 		return 1;
-	if(number_of_live_neighbours == 3)
+	}
+	else if(num_of_live_neighbours == 3) {
 		return 1;
-	else return 0;
-}
-
-/* body of thread watching interrupt */
-void* sig_thread_func(void* pParam) {
-	int index = *(int*)pParam;
-	index+=10;
-	signal(SIGINT, INThandler);
-	while(1)
-		usleep(200000);
-}
-
-/* cleanup after interrupt */
-void INThandler(int sig) {
-	signal(sig, SIG_IGN);
-	sem_destroy(&semaphore);
-	pthread_mutex_destroy(&mutex);
-	exit(0);
+	}
+	else
+		return 0;
 }
