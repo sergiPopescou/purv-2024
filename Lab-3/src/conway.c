@@ -18,11 +18,11 @@ int matrix[10][10] = {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
 int pom_matrix[10][10];
 sem_t semaphores[100];
 pthread_mutex_t mutex;
-int sleep_usec = 300000;
+int sleep_usec = 300000; /* default sleep time between prints in microseconds */
 int done_cells[28] ={0};
 
-int find_new_state(int i, int j);
-void* cell_func(void* arg);
+int find_new_state(int i, int j); /* function that returns 1 if next state of cell is alive, and 0 if not */
+void* cell_func(void* arg); /* cell thread function */
 void print_matrix(int matrix[10][10]);
 int find_number_of_posts(int priority);
 
@@ -66,8 +66,6 @@ void* cell_func(void* arg) {
 
 	while(1) {
 		sem_wait(&semaphores[priority-1]); // TODO [promijeni]
-		/* printf("USAO JE %d %d %d\n", priority, i, j); */
-		/* fflush(stdout); */
 		int new_state = find_new_state(i, j);
 		pom_matrix[i][j] = new_state;
 		if(priority == 28) {
@@ -79,7 +77,7 @@ void* cell_func(void* arg) {
 			printf("\e[1;1H\e[2J");
 			print_matrix(matrix);
 			fflush(stdout);
-			usleep(sleep_usec-200000);
+			usleep(sleep_usec);
 			sem_post(&semaphores[0]);
 			continue;
 		}
@@ -90,9 +88,6 @@ void* cell_func(void* arg) {
 				}
 			}
 		pthread_mutex_unlock(&mutex);
-		/* printf("ZAVRSIO JE %d %d %d\n", priority, i, j); */
-		/* while(done_cells[priority-1] != number_of_posts_this) */
-		/* 	usleep(100); */
 		usleep(500); 
 	}
 	return 0;
