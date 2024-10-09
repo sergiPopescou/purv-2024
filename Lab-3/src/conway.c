@@ -27,9 +27,10 @@ void print_matrix(int matrix[10][10]);
 int find_number_of_posts(int priority);
 
 int main(int argc, char *argv[]) {
+	int i,j;
 	if(argc>1)
 		sleep_usec = atoi(argv[1]);
-	for(int i=0;i<100;i++) {
+	for(i=0;i<100;i++) {
 		sem_init(&semaphores[i], 0, 0);
 	}
 	sem_post(&semaphores[0]);
@@ -37,19 +38,19 @@ int main(int argc, char *argv[]) {
 	pthread_mutex_init(&mutex, NULL);
 	int args[100];
 
-	for(int i=0;i<10;i++) {
-		for(int j=0;j<10;j++) {
+	for(i=0;i<10;i++) {
+		for(j=0;j<10;j++) {
 			int priority = (i*2+j+1);
 			args[i*10+j] = (priority*100)+(i*10)+j; // priority + row + col, e.g priority 10, row 3, col 2 => arg = 1032
 			pthread_create(&cells[i*10+j],NULL, &cell_func, (void*)(&args[i*10+j]));
 		}
 	}
 
-	for(int i=0;i<10;i++)
-		for(int j=0;j<10;j++)
+	for(i=0;i<10;i++)
+		for(j=0;j<10;j++)
 			pthread_join(cells[i*10+j], NULL);
 
-	for(int i=0;i<100;i++)
+	for(i=0;i<100;i++)
 		sem_destroy(&semaphores[i]);
 	pthread_mutex_destroy(&mutex);
 
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
 }
 
 void* cell_func(void* arg) {
+	int k,l;
 	int priority = (*(int*)arg)/100;
 	int i = ((*(int*)arg)/10)%10; // row
 	int j = (*(int*)arg)%10; // col
@@ -69,10 +71,10 @@ void* cell_func(void* arg) {
 		int new_state = find_new_state(i, j);
 		pom_matrix[i][j] = new_state;
 		if(priority == 28) {
-			for(int k=0;k<10;k++)
-				for(int l=0;l<10;l++)
+			for(k=0;k<10;k++)
+				for(l=0;l<10;l++)
 					matrix[k][l] = pom_matrix[k][l];
-			for(int k=0;k<28;k++)
+			for(k=0;k<28;k++)
 				done_cells[k] = 0;
 			printf("\e[1;1H\e[2J");
 			print_matrix(matrix);
@@ -83,7 +85,7 @@ void* cell_func(void* arg) {
 		}
 		pthread_mutex_lock(&mutex);
 			if(++done_cells[priority-1] == number_of_posts_this) {
-				for(int k=0;k<number_of_posts_next;k++) {
+				for(k=0;k<number_of_posts_next;k++) {
 					sem_post(&semaphores[priority]);
 				}
 			}
@@ -94,8 +96,9 @@ void* cell_func(void* arg) {
 }
 
 void print_matrix(int matrix[10][10]) {
-	for(int i=0;i<10;i++) {
-		for(int j=0;j<10;j++)
+	int i,j;
+	for(i=0;i<10;i++) {
+		for(j=0;j<10;j++)
 			matrix[i][j] == 0 ? printf(" ") : printf("#");
 		printf("\n");
 	}
@@ -114,9 +117,10 @@ int find_number_of_posts(int priority) {
 }
 
 int find_new_state(int i, int j) {
+	int ii,jj;
 	int num_of_live_neighbours = 0;
-	for(int ii=i-1;ii<i+2;ii++) {
-		for(int jj=j-1;jj<j+2;jj++) {
+	for(ii=i-1;ii<i+2;ii++) {
+		for(jj=j-1;jj<j+2;jj++) {
 			if(ii<0 || ii>9 || jj<0 || jj>9 || (ii==i && jj==j))
 				continue;
 			if(matrix[ii][jj] == 1)
