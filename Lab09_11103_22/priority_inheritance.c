@@ -13,6 +13,22 @@
 #define MY_STACK_SIZE       (100*1024)      /* 100 kB dodatak za stek */
 static pthread_mutex_t mtx;
 static pthread_mutexattr_t mtx_attr;
+static int shared_val = 0;
+
+typedef struct resource_thread_args {
+	int sleep_sec;
+	int priority;
+	int additional_stack_size;
+	int do_log;
+	int shared_val_increment;
+} resource_thread_args;
+   
+typedef struct non_res_thread_args {
+	int sleep_sec;
+	int priority;
+	int additional_stack_size;
+	int do_log;
+} non_res_thread_args;
    
 static void setprio(int prio, int sched) {
 	struct sched_param param;
@@ -57,11 +73,17 @@ static void prove_thread_stack_use_is_safe(int stacksize, int do_log) {
 /*************************************************************/
 /* Funkcija programske niti koja koristi dijeljeni resurs */
 static void *resource_thread_fn(void *args) {
+	int shared_val_increment;
+
    	struct timespec ts;
    	ts.tv_sec = 30;
    	ts.tv_nsec = 0;
+
+	resource_thread_args rta = *(resource_thread_args*) args;
    
-   	setprio(sched_get_priority_max(SCHED_RR), SCHED_RR);
+   	setprio(rta.priority, SCHED_RR);
+   	ts.tv_nsec = rta.sleep_sec;
+	shared_val_increment = rta.shared_val_increment;
    
    	/* printf("I am an RT-thread with a stack that does not generate " \ */
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
@@ -70,7 +92,7 @@ static void *resource_thread_fn(void *args) {
   	printf("resource thread\n"); 
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
    
-   	prove_thread_stack_use_is_safe(MY_STACK_SIZE, 1);
+   	prove_thread_stack_use_is_safe(MY_STACK_SIZE + rta.additional_stack_size, rta.do_log);
    
    	/* spavati 30 sekundi */
    	clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
@@ -85,8 +107,11 @@ static void *non_res_thread_fn(void *args) {
    	struct timespec ts;
    	ts.tv_sec = 30;
    	ts.tv_nsec = 0;
+
+	non_res_thread_args nrta = *(non_res_thread_args*) args;
    
-   	setprio(sched_get_priority_max(SCHED_RR), SCHED_RR);
+   	setprio(nrta.priority, SCHED_RR);
+   	ts.tv_sec = nrta.sleep_sec;
    
    	/* printf("I am an RT-thread with a stack that does not generate " \ */
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
@@ -95,7 +120,7 @@ static void *non_res_thread_fn(void *args) {
   	printf("non resource thread\n"); 
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
    
-   	prove_thread_stack_use_is_safe(MY_STACK_SIZE, 1);
+   	prove_thread_stack_use_is_safe(MY_STACK_SIZE + nrta.additional_stack_size, nrta.do_log);
    
    	/* spavati 30 sekundi */
    	clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
@@ -110,10 +135,13 @@ static void error(int at) {
 	exit(1);
 }
    
-static pthread_t start_rt_thread(void*(*rt_thread)(void*)) {
+static pthread_t start_rt_thread(void*(*rt_thread)(void*), void* thread_arg) {
    	pthread_t thread;
    	pthread_attr_t attr;
-   
+
+	/* resource_thread_args *rta = (resource_thread_args*)thread_arg; */
+	/* printf("%d\n", rta->priority); */
+
    	/* inicijalizacija programske niti */
    	if (pthread_attr_init(&attr))
    		error(1);
@@ -121,7 +149,7 @@ static pthread_t start_rt_thread(void*(*rt_thread)(void*)) {
    	if (pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + MY_STACK_SIZE))
    		error(2);
    	/* kreiranje programske niti */
-   	pthread_create(&thread, &attr, rt_thread, NULL);
+   	pthread_create(&thread, &attr, rt_thread, thread_arg);
    	return thread;
 }
    
@@ -173,10 +201,30 @@ int main(int argc, char *argv[]) {
 	pthread_mutexattr_init(&mtx_attr);
 	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_PROTECT);
 	pthread_mutex_init(&mtx, &mtx_attr);
-   
-   	start_rt_thread(resource_thread_fn);
-   	start_rt_thread(resource_thread_fn);
-   	start_rt_thread(non_res_thread_fn);
+
+	resource_thread_args *rta1 = malloc(sizeof(resource_thread_args));
+	rta1->sleep_sec = 5;
+	rta1->priority = 99;
+	rta1->additional_stack_size = 0;
+	rta1->do_log = 0;
+	rta1->shared_val_increment = 2;
+
+	resource_thread_args *rta2 = malloc(sizeof(resource_thread_args));
+	rta2->sleep_sec = 5;
+	rta2->priority = 97;
+	rta2->additional_stack_size = 0;
+	rta2->do_log = 0;
+	rta2->shared_val_increment = 2;
+
+	resource_thread_args *nrta1 = malloc(sizeof(non_res_thread_args));
+	nrta1->sleep_sec = 5;
+	nrta1->priority = 98;
+	nrta1->additional_stack_size = 0;
+	nrta1->do_log = 0;
+
+   	start_rt_thread(resource_thread_fn, rta1);
+   	start_rt_thread(resource_thread_fn, rta2);
+   	start_rt_thread(non_res_thread_fn, nrta1);
    
     //<do your RT-thing>
    
