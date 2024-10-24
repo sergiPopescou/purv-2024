@@ -65,26 +65,6 @@ int start_periodic_timer(uint64_t offs, int period, int i)
     return timer_settime(timer, 0 /*TIMER_ABSTIME*/, &t, NULL);
 }
 
-static void job_body(void)
-{
-    static int cnt;
-    static uint64_t start;
-    uint64_t t;
-    struct timeval tv;
-
-    if (start == 0) {
-        gettimeofday(&tv, NULL);
-	start = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    }
-        
-    gettimeofday(&tv, NULL);
-    t = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    if (cnt && (cnt % 100) == 0) {
-        printf("Avg time: %f\n", (double)(t - start) / (double)cnt);
-    }
-    cnt++;
-}
-
 int main(int argc, char *argv[])
 {
     int res1, res2;
