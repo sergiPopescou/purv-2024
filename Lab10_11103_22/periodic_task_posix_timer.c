@@ -88,8 +88,6 @@ static void job_body(void)
 int main(int argc, char *argv[])
 {
     int res1, res2;
-	printf("CAO");
-	fflush(stdout);
 
     res1 = start_periodic_timer(2000000, 60000, 1);
     res2 = start_periodic_timer(2000000, 80000, 2);

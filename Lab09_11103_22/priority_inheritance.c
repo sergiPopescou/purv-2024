@@ -73,7 +73,7 @@ static void prove_thread_stack_use_is_safe(int stacksize, int do_log) {
 /*************************************************************/
 /* Funkcija programske niti koja koristi dijeljeni resurs */
 static void *resource_thread_fn(void *args) {
-	int shared_val_increment;
+	int shared_val_increment, i, j, c;
 
    	struct timespec ts;
    	ts.tv_sec = 30;
@@ -89,7 +89,21 @@ static void *resource_thread_fn(void *args) {
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
    
     //<do your RT-thing here>
-  	printf("resource thread\n"); 
+  	printf("Resource thread with priority %d starts some calcluations\n", rta.priority);
+	for(i=0;i<100;i++)
+		for(j=0;j<500;j++)
+			c=i*j;
+  	printf("Resource thread with priority %d finishes calculations\n", rta.priority);
+
+	pthread_mutex_lock(&mtx);
+		printf("Resource thread with priority %d locks mutex\n", rta.priority);
+		shared_val += shared_val_increment;
+		for(i=0;i<100;i++)
+			for(j=0;j<2000;j++)
+				c=i*j;
+		printf("Resource thread with priority %d unlocks mutex\n", rta.priority);
+	pthread_mutex_unlock(&mtx);
+	
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
    
    	prove_thread_stack_use_is_safe(MY_STACK_SIZE + rta.additional_stack_size, rta.do_log);
@@ -104,6 +118,8 @@ static void *resource_thread_fn(void *args) {
 /*************************************************************/
 /* Funkcija programske niti koja ne koristi dijeljeni resurs */
 static void *non_res_thread_fn(void *args) {
+	int i, j, c;
+
    	struct timespec ts;
    	ts.tv_sec = 30;
    	ts.tv_nsec = 0;
@@ -117,7 +133,11 @@ static void *non_res_thread_fn(void *args) {
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
    
     //<do your RT-thing here>
-  	printf("non resource thread\n"); 
+  	printf("Non resource thread with priority %d starts some calcluations\n", nrta.priority);
+	for(i=0;i<50;i++)
+		for(j=0;j<500;j++)
+			c=i*j;
+  	printf("Non resource thread with priority %d finishes calculations\n", nrta.priority);
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
    
    	prove_thread_stack_use_is_safe(MY_STACK_SIZE + nrta.additional_stack_size, nrta.do_log);
@@ -181,6 +201,10 @@ static void reserve_process_memory(int size) {
 int main(int argc, char *argv[]) {
    	/* show_new_pagefault_count("Initial count", ">=0", ">=0"); */
    
+	pthread_mutexattr_init(&mtx_attr);
+	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_PROTECT);
+	pthread_mutex_init(&mtx, &mtx_attr);
+
    	configure_malloc_behavior();
    
    	/* show_new_pagefault_count("mlockall() generated", ">=0", ">=0"); */
@@ -198,32 +222,31 @@ int main(int argc, char *argv[]) {
    	/* printf("\n\nLook at the output of ps -leyf, and see that the " \ */
    	/*        "RSS is now about %d [MB]\n", */
    	/*        PRE_ALLOCATION_SIZE / (1024 * 1024)); */
-	pthread_mutexattr_init(&mtx_attr);
-	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_PROTECT);
-	pthread_mutex_init(&mtx, &mtx_attr);
 
 	resource_thread_args *rta1 = malloc(sizeof(resource_thread_args));
 	rta1->sleep_sec = 5;
-	rta1->priority = 99;
+	rta1->priority = sched_get_priority_max(SCHED_RR);
 	rta1->additional_stack_size = 0;
 	rta1->do_log = 0;
 	rta1->shared_val_increment = 2;
 
 	resource_thread_args *rta2 = malloc(sizeof(resource_thread_args));
 	rta2->sleep_sec = 5;
-	rta2->priority = 97;
+	rta2->priority = sched_get_priority_min(SCHED_RR);
 	rta2->additional_stack_size = 0;
 	rta2->do_log = 0;
 	rta2->shared_val_increment = 2;
 
 	resource_thread_args *nrta1 = malloc(sizeof(non_res_thread_args));
 	nrta1->sleep_sec = 5;
-	nrta1->priority = 98;
+	nrta1->priority = sched_get_priority_max(SCHED_RR)-5;
 	nrta1->additional_stack_size = 0;
 	nrta1->do_log = 0;
 
-   	start_rt_thread(resource_thread_fn, rta1);
    	start_rt_thread(resource_thread_fn, rta2);
+	usleep(100);
+   	start_rt_thread(resource_thread_fn, rta1);
+	usleep(100);
    	start_rt_thread(non_res_thread_fn, nrta1);
    
     //<do your RT-thing>
