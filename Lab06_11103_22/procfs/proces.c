@@ -10,6 +10,7 @@
 #include <linux/ioctl.h>
 #include <linux/proc_fs.h>
 #include <linux/version.h>
+#include <linux/string.h>
 
 // #define KERNEL_VERSION(a, b, c) (((a) << 16) + ((b) << 8) + ((c) > 255 ? 255 : (c)))
 
@@ -118,13 +119,37 @@ char* stat_driver_buffer;
 
 static ssize_t stat_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
+	char output_string[200] = "";
+	char pom[10] = "";
+	int i, j=0, k=0;
+	char num_of_gens[5], num_of_alive[5], num_of_born[5], num_of_dead[5];
+	for(i=0;i<len;i++) {
+		if(buf[i] != ' ') {
+			pom[j++] = buf[i];
+		}
+		else {
+			pom[j] = '\0';
+			if(k==0)
+				strcpy(num_of_gens, pom);
+			else if(k==1)
+				strcpy(num_of_alive, pom);
+			else if(k==2)
+				strcpy(num_of_born, pom);
+			else if(k==3)
+				strcpy(num_of_dead, pom);
+			k++;
+			memset(pom, 0, 10);
+			j=0;
+		}
+	}
+	snprintf(output_string, "Number of generations: %s\nNumber of alive cells: %s\nNumber of born cells: %s\nNumber of dead cells: %s\n", num_of_gens, num_of_alive, num_of_born, num_of_dead);
         printk(KERN_INFO "Read function\n");
 		if(*off == 0) {
-			if(copy_to_user(buf, stat_driver_buffer, BUF_LEN)!=0)
+			if(copy_to_user(buf, output_string, 200)!=0)
 				return -EFAULT;
 			else {
-				(*off) += BUF_LEN;
-				return BUF_LEN;
+				(*off) += 200;
+				return 200;
 			}
 		}
         return 0;

@@ -103,8 +103,15 @@ void* cell_func(void* arg) {
 				done_cells[k] = 0;
 			number_of_generations++;
 			FILE *fptr = fopen("/dev/stat_device", "w");
-			fprintf(fptr, "Number of generations:%d\nNumber of live cells:%d\nNumber of dead cells:%d\nNumber of born cells:%d\n", number_of_generations, number_of_alive_cells, number_of_dead_cells, number_of_born_cels);
-			fclose(fptr);
+			if(fptr == NULL) {
+				printf("Can't open file");
+			} else {
+				fprintf(fptr, "%d %d %d %d\n", number_of_generations, number_of_alive_cells, number_of_dead_cells, number_of_born_cels);
+				fclose(fptr);
+			}
+			number_of_born_cels = 0;
+			number_of_alive_cells = 0;
+			number_of_dead_cells = 0;
 			printf("\e[1;1H\e[2J");
 			print_matrix(matrix);
 			fflush(stdout);
