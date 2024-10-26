@@ -1,0 +1,10 @@
+1729931184463: Resource thread with priority 1 starts some calcluations
+1729931184465: Resource thread with priority 1 finishes calculations
+1729931184465: Resource thread with priority 1 locks mutex
+1729931184465: Resource thread with priority 99 starts some calcluations
+1729931184467: Resource thread with priority 99 finishes calculations
+1729931184467: Resource thread with priority 99 locks mutex
+1729931184470: Resource thread with priority 1 unlocks mutex
+1729931184471: Resource thread with priority 99 unlocks mutex
+1729931184474: Non resource thread with priority 94 starts some calcluations
+1729931184475: Non resource thread with priority 94 finishes calculations

@@ -8,12 +8,15 @@
 #include <sys/resource.h> // potrebno za getrusage
 #include <pthread.h>
 #include <limits.h>
+#include <inttypes.h>
    
 #define PRE_ALLOCATION_SIZE (10*1024*1024) /* 100MB pagefault free buffer */
 #define MY_STACK_SIZE       (100*1024)      /* 100 kB dodatak za stek */
 static pthread_mutex_t mtx;
 static pthread_mutexattr_t mtx_attr;
 static int shared_val = 0;
+
+int64_t currentTimeMillis();
 
 typedef struct resource_thread_args {
 	int sleep_sec;
@@ -89,19 +92,19 @@ static void *resource_thread_fn(void *args) {
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
    
     //<do your RT-thing here>
-  	printf("Resource thread with priority %d starts some calcluations\n", rta.priority);
+  	printf("%" PRId64 ": Resource thread with priority %d starts some calcluations\n", currentTimeMillis(), rta.priority);
 	for(i=0;i<100;i++)
 		for(j=0;j<500;j++)
 			c=i*j;
-  	printf("Resource thread with priority %d finishes calculations\n", rta.priority);
+  	printf("%" PRId64 ": Resource thread with priority %d finishes calculations\n", currentTimeMillis(), rta.priority);
 
 	pthread_mutex_lock(&mtx);
-		printf("Resource thread with priority %d locks mutex\n", rta.priority);
+		printf("%" PRId64 ": Resource thread with priority %d locks mutex\n", currentTimeMillis(), rta.priority);
 		shared_val += shared_val_increment;
 		for(i=0;i<100;i++)
 			for(j=0;j<2000;j++)
 				c=i*j;
-		printf("Resource thread with priority %d unlocks mutex\n", rta.priority);
+		printf("%" PRId64 ": Resource thread with priority %d unlocks mutex\n", currentTimeMillis(), rta.priority);
 	pthread_mutex_unlock(&mtx);
 	
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
@@ -133,11 +136,11 @@ static void *non_res_thread_fn(void *args) {
    	/*        "page-faults during use, stacksize=%i\n", MY_STACK_SIZE); */
    
     //<do your RT-thing here>
-  	printf("Non resource thread with priority %d starts some calcluations\n", nrta.priority);
+  	printf("%" PRId64 ": Non resource thread with priority %d starts some calcluations\n", currentTimeMillis(), nrta.priority);
 	for(i=0;i<50;i++)
 		for(j=0;j<500;j++)
 			c=i*j;
-  	printf("Non resource thread with priority %d finishes calculations\n", nrta.priority);
+  	printf("%" PRId64 ": Non resource thread with priority %d finishes calculations\n", currentTimeMillis(), nrta.priority);
    	/* show_new_pagefault_count("Caused by creating thread", ">=0", ">=0"); */
    
    	prove_thread_stack_use_is_safe(MY_STACK_SIZE + nrta.additional_stack_size, nrta.do_log);
@@ -202,7 +205,7 @@ int main(int argc, char *argv[]) {
    	/* show_new_pagefault_count("Initial count", ">=0", ">=0"); */
    
 	pthread_mutexattr_init(&mtx_attr);
-	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_PROTECT);
+	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_INHERIT);
 	pthread_mutex_init(&mtx, &mtx_attr);
 
    	configure_malloc_behavior();
@@ -251,10 +254,18 @@ int main(int argc, char *argv[]) {
    
     //<do your RT-thing>
    
-   	printf("Press <ENTER> to exit\n");
+   	/* printf("Press <ENTER> to exit\n"); */
    	getchar();
    
 	pthread_mutexattr_destroy(&mtx_attr);
 	pthread_mutex_destroy(&mtx);
    	return 0;
+}
+
+int64_t currentTimeMillis() {
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	int64_t s1 = (int64_t)(time.tv_sec) * 1000;
+	int64_t s2 = (time.tv_usec / 1000);
+	return s1 + s2;
 }
