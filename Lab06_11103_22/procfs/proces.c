@@ -120,39 +120,38 @@ char* stat_driver_buffer;
 static ssize_t stat_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
 {
 	char output_string[200] = "";
-	char pom[10] = "";
+	char pom[20] = "";
 	int i, j=0, k=0;
 	char num_of_gens[5], num_of_alive[5], num_of_born[5], num_of_dead[5];
-	for(i=0;i<len;i++) {
-		if(buf[i] != ' ') {
-			pom[j++] = buf[i];
-		}
-		else {
-			pom[j] = '\0';
-			if(k==0)
-				strcpy(num_of_gens, pom);
-			else if(k==1)
-				strcpy(num_of_alive, pom);
-			else if(k==2)
-				strcpy(num_of_born, pom);
-			else if(k==3)
-				strcpy(num_of_dead, pom);
-			k++;
-			memset(pom, 0, 10);
-			j=0;
-		}
-	}
-	snprintf(output_string, "Number of generations: %s\nNumber of alive cells: %s\nNumber of born cells: %s\nNumber of dead cells: %s\n", num_of_gens, num_of_alive, num_of_born, num_of_dead);
-        printk(KERN_INFO "Read function\n");
-		if(*off == 0) {
-			if(copy_to_user(buf, output_string, 200)!=0)
-				return -EFAULT;
+
+	if(*off == 0) {
+		for(i=0;stat_driver_buffer[i] != '\n';i++) {
+			if(stat_driver_buffer[i] != ' ' && stat_driver_buffer[i] != '\0') {
+				pom[j++] = stat_driver_buffer[i];
+			}
 			else {
-				(*off) += 200;
-				return 200;
+				pom[j] = '\0';
+				if(k==0)
+					strcpy(num_of_gens, pom);
+				else if(k==1)
+					strcpy(num_of_alive, pom);
+				else if(k==2)
+					strcpy(num_of_born, pom);
+				k++;
+				memset(pom, 0, 10);
+				j=0;
 			}
 		}
-        return 0;
+		strcpy(num_of_dead, pom);
+		sprintf(output_string, "Number of generations: %s\nNumber of alive cells: %s\nNumber of born cells: %s\nNumber of dead cells: %s\n", num_of_gens, num_of_alive, num_of_born, num_of_dead);
+		if(copy_to_user(buf, output_string, 200)!=0)
+			return -EFAULT;
+		else {
+			(*off) += 200;
+			return 200;
+		}
+	}
+    return 0;
 }
 
 static ssize_t stat_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
