@@ -1,14 +1,9 @@
-ifeq ($(KERNELRELEASE),)
-KERNEL_SOURCE := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
-obj-m := ioctl.o
+obj-m += ioctl.o
+
+KDIR = /lib/modules/$(shell uname -r)
 
 all:
-	make -C $(KERNEL_SOURCE) M=$(PWD) modules
+	make -C $(KDIR) M=$(shell pwd) modules
 
 clean:
-	make -C $(KERNEL_SOURCE) M=$(PWD) clean
-
-else
-obj-m := ioctl.o
-endif
+	make -C $(KDIR) M=$(shell pwd) clean
