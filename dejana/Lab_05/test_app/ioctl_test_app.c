@@ -10,7 +10,23 @@
 
 int main() {
     int fd;
-    uint16_t cell_states = 0b001010101; 
+    uint16_t cell_states = 0b0010101000;
+    char input[10];
+
+    printf("Unesite stanje celija: devet bita tacno: ");
+    scanf("%9s", input);
+    printf("Debug: Uneseni string: %s\n", input);
+    input[9] = '\0';
+    for(int i = 0; i < 9; i++)
+    {
+	if(input[i] != '0' && input[i] != '1')
+		{
+			return -1;
+		}
+	cell_states = (cell_states << 1) | (input[i] - '0');
+    }
+    
+    printf("Uneseni biti u decimalnom broju: 0b%09u\n", cell_states);
     /* 
     this equals:
         [0][1][0]
