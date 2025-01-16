@@ -207,8 +207,9 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
                         if( copy_from_user(&input_state_array ,(uint16_t*) arg, sizeof(input_state_array)) )
                         {
                                 pr_err("Data Write : Err!\n");
+                                break;
                         }
-                        break;
+                        
 
                         cell_states = input_state_array;
                         if(cell_states > 511)
