@@ -1,0 +1,16 @@
+[1738084921.308974855] [Prioritet: 8] Zapocinje izvrsavanje niti.
+[1738084921.309865823] [Prioritet: 8] Zakljucan mutex.
+[1738084921.309231254] [Prioritet: 5] Zapocinje izvrsavanje niti.
+[1738084921.309919067] [Prioritet: 5] Zakljucan mutex.
+[1738084921.461361257] [Prioritet: 5] Otkljucan mutex.
+[1738084921.462053759] [Prioritet: 5] Zavrseno izvrsavanje niti.
+[1738084921.309031245] [Prioritet: 1] Zapocinje izvrsavanje niti.
+[1738084921.462127055] [Prioritet: 8] Otkljucan mutex.
+[1738084921.462130071] [Prioritet: 8] Zavrseno izvrsavanje niti.
+[1738084921.462716625] [Prioritet: 2] Zapocinje izvrsavanje niti.
+[1738084921.462721284] [Prioritet: 2] Zakljucan mutex.
+[1738084921.555830481] [Prioritet: 2] Otkljucan mutex.
+[1738084921.555921092] [Prioritet: 2] Zavrseno izvrsavanje niti.
+[1738084941.463205134] [Prioritet: 1] Zakljucan mutex.
+[1738084941.548935299] [Prioritet: 1] Otkljucan mutex.
+[1738084941.548942283] [Prioritet: 1] Zavrseno izvrsavanje niti.
