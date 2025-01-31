@@ -100,67 +100,28 @@ int start_periodic_timer(uint64_t offs, int period, uint8_t task_num)
 }
 
 /* fja koja se izvrsava periodicno kada tajmer generise signal */
-static void job_body_task1(void)
+/* iz fajla periodic_tasks.c */
+void task1(void)
 {
-	printf("Ja sam funkcija task1!!!\n");
-    static int cnt; /* koliko puta je pozvana fja */
-    static uint64_t start; /* vrijeme kad je fja prvi put pozvana */
-    uint64_t t; /* trenutno vrijeme */
-    struct timeval tv;
-
-    if (start == 0) /* ako je prvi put, onda cuva pocetno vrijeme */
-    {
-        gettimeofday(&tv, NULL);
-		start = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    }
-        
-    gettimeofday(&tv, NULL);
-    t = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    if (cnt && (cnt % 100) == 0) 
-    {
-        printf("Avg time: %f\n", (double)(t - start) / (double)cnt);
-        if (log_file != NULL) 
-        {
-        	fprintf(log_file, "Task 1 - Avg time: %f\n", (double)(t - start) / (double)cnt);
-        	fflush(log_file);
-    	}
-    }
-    cnt++;
+  int i,j;
+ 
+  for (i=0; i<4; i++) {
+    for (j=0; j<1000; j++) ;
+    printf("1");
     fflush(stdout);
+  }
 }
 
-/************************************************************************/
-
-static void job_body_task2(void)
+void task2(void)
 {
-	printf("Ja sam funkcija task2!!!\n");
-    static int cnt; /* koliko puta je pozvana fja */
-    static uint64_t start; /* vrijeme kad je fja prvi put pozvana */
-    uint64_t t; /* trenutno vrijeme */
-    struct timeval tv;
+  int i,j;
 
-    if (start == 0) /* ako je prvi put, onda cuva pocetno vrijeme */
-    {
-        gettimeofday(&tv, NULL);
-		start = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    }
-        
-    gettimeofday(&tv, NULL);
-    t = tv.tv_sec * 1000ULL + tv.tv_usec / 1000ULL;
-    if (cnt && (cnt % 100) == 0) 
-    {
-        printf("Avg time: %f\n", (double)(t - start) / (double)cnt);
-        if (log_file != NULL) 
-        {
-        	fprintf(log_file, "Task 2 - Avg time: %f\n", (double)(t - start) / (double)cnt);
-        	fflush(log_file);
-    	}
-    }
-    cnt++;
+  for (i=0; i<6; i++) {
+    for (j=0; j<10000; j++) ;
+    printf("2");
     fflush(stdout);
+  }
 }
-
-/*************************************************************************/
 
 
 int main(int argc, char *argv[])
@@ -188,9 +149,9 @@ int main(int argc, char *argv[])
     while(1) 
     {
         wait_next_activation(1); /* cekaj sigalarm od tajmera */
-        job_body_task1();  /* izvrsi posao */
+        task1();  /* izvrsi posao */
         wait_next_activation(2);
-        job_body_task2();
+        task2();
     }
 
     fclose(log_file);
