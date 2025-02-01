@@ -1,9 +1,10 @@
-CR_C := arm-linux-gnueabihf-
-MODULES := /home/anja/rpi-kernel/linux
-obj-m += ioctl.o
+obj-m += IOCTL_driver.o
+
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
 
 all:
-	make ARCH=arm CROSS_COMPILE=$(CR_C) -C $(MODULES) M=$(shell pwd) modules
-
+	make -C $(KDIR)  M=$(shell pwd) modules
+ 
 clean:
-	make ARCH=arm CROSS_COMPILE=$(CR_C) -C $(MODULES) M=$(shell pwd) clean
+	make -C $(KDIR)  M=$(shell pwd) clean

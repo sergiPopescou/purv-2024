@@ -1,0 +1,12 @@
+1. Kompajliranje i učitavanje drajvera
+
+    make clean && make                             # Očistite i kompajlirajte drajver
+    sudo insmod IOCTL_driver.ko                    # Učitajte drajver u kernel
+    dmesg                                          # Proverite izlaz kako biste potvrdili da je drajver uspešno učitan
+    sudo mknod /dev/etx_device c 239 0             # Kreirajte uređaj u `/dev` folderu
+    sudo chmod 666 /dev/etx_device                 # Dodelite permisije za čitanje i pisanje uređaja
+
+2. Kompajliranje i pokretanje korisničke aplikacije
+
+    make clean && make                             # Očistite i kompajlirajte korisničku aplikaciju
+    ./main                                         # Pokrenite aplikaciju

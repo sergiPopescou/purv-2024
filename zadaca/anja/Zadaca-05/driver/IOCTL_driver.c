@@ -5,7 +5,7 @@
 *
 *  \author     EmbeTronicX, AnjaDj
 *
-*  \note       Tested with Linux raspberrypi 6.6.62+rpt-rpi-v7
+*  \note       Tested with Linux raspberrypi 6.6.66-v7+
 *
 ***********************************************************************/
 #include <linux/kernel.h>
@@ -15,20 +15,11 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
-#include <linux/slab.h>                 
-#include <linux/uaccess.h>              
+#include<linux/slab.h>                 /* kmalloc() */
+#include<linux/uaccess.h>              /* copy_to/from_user() */
 #include <linux/ioctl.h>
 #include <linux/err.h>
- 
 
-/**
- * Define the IOCTL command as
- *   #define "ioctl name" __IOX(magic numb, command numb, arg type)
- *       IOX = IO  : an ioctl with no parameters
- *       IOX = IOW : an ioctl with write parameters (copy_from_user)
- *       IOX = IOR : an ioctl with read  parameters (copy_to_user)
- *       IOX = IOWR: an ioctl with both write and read parameters
- */ 
 #define WR_VALUE _IOW('a','a',int32_t*)
 #define RD_VALUE _IOR('a','b',int32_t*)
  
@@ -37,66 +28,36 @@
 
 int32_t value = 0;
 int32_t newState = 0; 
- 
+int ioctl_driver_major; 
+
 dev_t dev = 0;
 static struct class *dev_class;
 static struct cdev etx_cdev;
 
-
+void calculate_new_state(void);
 static int      __init etx_driver_init(void);
 static void     __exit etx_driver_exit(void);
-static int      etx_open(struct inode *inode, struct file *file);
-static int      etx_release(struct inode *inode, struct file *file);
-static ssize_t  etx_read(struct file *filp, char __user *buf, size_t len,loff_t * off);
-static ssize_t  etx_write(struct file *filp, const char *buf, size_t len, loff_t * off);
-static long     etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
-
-static struct file_operations fops =
+static int etx_open(struct inode *inode, struct file *filp)
 {
-        .owner          = THIS_MODULE,
-        .read           = etx_read,
-        .write          = etx_write,
-        .open           = etx_open,
-        .unlocked_ioctl = etx_ioctl, // add ioctl function to driver
-        .release        = etx_release,
-};
-
-// This function will be called when we open the Device file
-static int etx_open(struct inode *inode, struct file *file)
-{
-        pr_info("Device File Opened...!!!\n");
-        return 0;
+    return 0;
 }
 
-// This function will be called when we close the Device file
-static int etx_release(struct inode *inode, struct file *file)
+static int etx_release(struct inode *inode, struct file *filp)
 {
-        pr_info("Device File Closed...!!!\n");
-        return 0;
+    return 0;
 }
 
-// This function will be called when we read the Device file
-static ssize_t etx_read(struct file *filp, char __user *buf, size_t len, loff_t *off)
-{
-        pr_info("Read Function\n");
-        return 0;
-}
-
-// This function will be called when we write the Device file
 static ssize_t etx_write(struct file *filp, const char __user *buf, size_t len, loff_t *off)
 {
-        pr_info("Write function\n");
-        return len;
+    return 0;
 }
 
+static ssize_t  etx_read(struct file *filp, char __user *buf, size_t len,loff_t * off)
+{
+    return 0;
+}
 
-/** 
- * Implement the IOCTL call we defined into the Device driver.
- *   @param file : is the file pointer to the file that was passed by the application.
- *   @param cmd  : is the ioctl command that was called from the userspace.
- *   @param arg  : are the arguments passed from the userspace
- */
 static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
     switch(cmd)
@@ -122,8 +83,17 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         return 0;
 }
 
+static struct file_operations fops =
+{
+        .owner          = THIS_MODULE,
+        .read           = etx_read,
+        .write          = etx_write,
+        .open           = etx_open,
+        .unlocked_ioctl = etx_ioctl, // add ioctl function to driver
+        .release        = etx_release,
+};
 
-void calculate_new_state() 
+void calculate_new_state(void) 
 {
     int alive_neighbors = 0;
 	
@@ -162,7 +132,6 @@ void calculate_new_state()
         
 }
 
-// Module Init function
 static int __init etx_driver_init(void)
 {
         /*Allocating Major number*/
@@ -182,7 +151,7 @@ static int __init etx_driver_init(void)
         }
  
         /*Creating struct class*/
-        if(IS_ERR(dev_class = class_create(THIS_MODULE,"etx_class"))){
+        if(IS_ERR(dev_class = class_create("etx_class"))){
             pr_err("Cannot create the struct class\n");
             goto r_class;
         }
@@ -192,17 +161,19 @@ static int __init etx_driver_init(void)
             pr_err("Cannot create the Device 1\n");
             goto r_device;
         }
-        pr_info("Device Driver Insert...Done!!!\n");
+        pr_info("Device Driver Insert - etx_device ...Done!!!\n");
         return 0;
  
-    r_device:
+r_device:
         class_destroy(dev_class);
-    r_class:
+r_class:
         unregister_chrdev_region(dev,1);
         return -1;
 }
 
-// Module exit function
+/*
+** Module exit function
+*/
 static void __exit etx_driver_exit(void)
 {
         device_destroy(dev_class,dev);
@@ -216,6 +187,6 @@ module_init(etx_driver_init);
 module_exit(etx_driver_exit);
  
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("EmbeTronicX <embetronicx@gmail.com> & AnjaDj");
-MODULE_DESCRIPTION("Simple Linux device driver (IOCTL)");
+MODULE_AUTHOR("AnjaDj");
+MODULE_DESCRIPTION("Linux device driver (IOCTL)");
 MODULE_VERSION("1.5");

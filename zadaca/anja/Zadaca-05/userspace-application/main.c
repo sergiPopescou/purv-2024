@@ -38,7 +38,7 @@ int main()
     
     states = (input[0] - '0') << 8 | (input[1] - '0') << 7 | (input[2] - '0') << 6 |  
              (input[3] - '0') << 5 | (input[4] - '0') << 4 | (input[5] - '0') << 3 |
-             (input[6] - '0') << 2 | (input[7] - '0') << 1 | input[8] - '0';
+             (input[6] - '0') << 2 | (input[7] - '0') << 1 | (input[8] - '0');
     
     printf("Writing Value to Driver\n");
     ioctl(fd, WR_VALUE, &states); 
