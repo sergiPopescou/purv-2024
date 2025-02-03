@@ -1,0 +1,11 @@
+make clean && make
+sudo insmod driver.ko
+
+echo "P1" > /proc/etx/etx_proc
+cat /proc/etx/etx_proc
+
+echo "m1" > /proc/etx/etx_proc
+cat /proc/etx/etx_proc
+
+echo "S1" > /proc/etx/etx_proc
+cat /proc/etx/etx_proc
