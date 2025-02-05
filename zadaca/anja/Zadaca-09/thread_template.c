@@ -65,25 +65,38 @@ static void *resource_thread_fn(void *args)
    	ts.tv_sec = localArgs->sleepTime;
 	ts.tv_nsec = 0;
     
-    if(localArgs->priority == sched_get_priority_max(SCHED_RR))
-		clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
-
-   	pthread_mutex_lock(&mtx);
     
-    shared_val += localArgs->sharedValIncrement;
-        
-    if(localArgs->priority == sched_get_priority_min(SCHED_RR))
+    // Niska prioritetna nit zaključava mutex i drži ga dugo
+    if (localArgs->priority == sched_get_priority_min(SCHED_RR))
     {
-			struct timespec start, end;
-			clock_gettime(CLOCK_MONOTONIC, &start); // Get start time
-		
-        	while (1)
-            {
-				clock_gettime(CLOCK_MONOTONIC, &end); 
-				if ( (end.tv_sec - start.tv_sec) >= 5) break;
-			}
+        pthread_mutex_lock(&mtx);
+
+        struct timespec start, end;
+        clock_gettime(CLOCK_MONOTONIC, &start); // Početno vreme
+        while (1)
+        {
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            if ((end.tv_sec - start.tv_sec) >= 5) // Zadržavanje mutex-a 5 sekundi
+                break;
+        }
+
+        pthread_mutex_unlock(&mtx);
+        
+    }// Visoka prioritetna nit pokušava da zaključa mutex
+    else if (localArgs->priority == sched_get_priority_max(SCHED_RR))
+    {
+        pthread_mutex_lock(&mtx);
+
+        // Simulira brz rad na resursu
+        shared_val += localArgs->sharedValIncrement;
+
+        pthread_mutex_unlock(&mtx);
     }
-	pthread_mutex_unlock(&mtx);
+    else // Srednja prioritetna nit zauzima CPU resurse, ali ne koristi mutex 
+    {
+        for (volatile int i = 0; i < 1000000000; i++)
+            int t = i*(i+1);// Simulira CPU intenzivan posao (zauzima vreme)
+    }
     
     return NULL;
 }
@@ -156,8 +169,8 @@ int main(int argc, char *argv[])
 	pthread_mutexattr_setprotocol(&mtx_attr, PTHREAD_PRIO_NONE);
 	pthread_mutex_init(&mtx,&mtx_attr);
     
-    pthread_t thread2 = start_rt_thread(&HighPriority, 1);
-    pthread_t thread1 = start_rt_thread(&LowPriority, 1);
+    pthread_t thread2 = start_rt_thread(&LowPriority, 1);
+    pthread_t thread1 = start_rt_thread(&HighPriority, 1);
     pthread_t thread3 = start_rt_thread(&MediumPriority, 1);
     
     pthread_join(thread1, NULL);
@@ -169,3 +182,14 @@ int main(int argc, char *argv[])
    
    	return 0;
 }   
+
+/*
+ * Niska prioritetna nit:
+     Zadržava mutex 5 sekundi simulacijom rada na resursu unutar beskonačne petlje. Ovo uzrokuje direktno blokiranje visoke prioritetne niti koja čeka na mutex.
+
+ * Srednja prioritetna nit:
+     Simulira CPU-intenzivan posao (ali ne koristi mutex) koristeći veliki broj iteracija. Zauzima CPU vreme i dodatno produžava čekanje visoke niti.
+
+ * Visoka prioritetna nit:
+     Pokušava da zaključa mutex. Međutim, mora čekati dok ga niska prioritetna nit ne oslobodi.
+*/
